@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydrate</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+
+<div class="celebration" id="celebration">🎉 Goal reached! Stay hydrated! 🌊</div>
+
+<header>
+  <div class="logo"><em>Hydrate</em></div>
+  <div class="tagline">Daily Water Tracker</div>
+</header>
+
+<div class="date-display" id="dateDisplay"></div>
+
+<div class="streak-badge">
+  <span class="streak-fire">🔥</span>
+  <span id="streakText">0 day streak</span>
+</div>
+
+<!-- Vessel -->
+<div class="vessel-container">
+  <div class="vessel-wrap">
+    <div class="vessel" id="vessel">
+      <div class="water-fill" id="waterFill" style="height:0%">
+        <div class="wave"></div>
+        <div class="wave wave2"></div>
+      </div>
+      <div class="markers" id="markers"></div>
+      <div class="pct-label" id="pctLabel">0%</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-val" id="currentVal">0</div>
+      <div class="stat-label">ml today</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="goalVal">2000</div>
+      <div class="stat-label">ml goal</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="remainVal">2000</div>
+      <div class="stat-label">ml left</div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick add -->
+<div class="quick-add">
+  <h3>Quick Add</h3>
+  <div class="btn-grid">
+    <button class="add-btn" onclick="addWater(150)">
+      <span class="btn-icon">☕</span>
+      <span class="btn-ml">150ml</span>
+      <span class="btn-label">espresso</span>
+    </button>
+    <button class="add-btn" onclick="addWater(250)">
+      <span class="btn-icon">🥤</span>
+      <span class="btn-ml">250ml</span>
+      <span class="btn-label">cup</span>
+    </button>
+    <button class="add-btn" onclick="addWater(500)">
+      <span class="btn-icon">💧</span>
+      <span class="btn-ml">500ml</span>
+      <span class="btn-label">bottle</span>
+    </button>
+    <button class="add-btn" onclick="addWater(750)">
+      <span class="btn-icon">🫗</span>
+      <span class="btn-ml">750ml</span>
+      <span class="btn-label">big cup</span>
+    </button>
+  </div>
+</div>
+
+<div class="custom-row">
+  <input type="number" class="custom-input" id="customMl" placeholder="Custom ml..." min="1" max="2000">
+  <button class="add-custom-btn" onclick="addCustom()">+ Add</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- Goal setting -->
+<div class="goal-section">
+  <h3>Daily Goal</h3>
+  <div class="goal-options">
+    <button class="goal-btn" onclick="setGoal(1500)">1500ml</button>
+    <button class="goal-btn active" onclick="setGoal(2000)">2000ml</button>
+    <button class="goal-btn" onclick="setGoal(2500)">2500ml</button>
+    <button class="goal-btn" onclick="setGoal(3000)">3000ml</button>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Log -->
+<div class="history-section">
+  <h3>Today's Log</h3>
+  <div class="log-list" id="logList">
+    <div class="empty-log">No water logged yet.<br>Start drinking! 💧</div>
+  </div>
+</div>
+
+<button class="reset-btn" onclick="resetDay()">Reset Day</button>
+
+<script>
+  // State
+  let state = JSON.parse(localStorage.getItem('hydrate-state') || 'null') || {
+    goal: 2000,
+    total: 0,
+    log: [],
+    lastDate: '',
+    streak: 0,
+    goalMet: false
+  };
+
+  function todayStr() {
+    return new Date().toLocaleDateString('en-CA');
+  }
+
+  function checkNewDay() {
+    const today = todayStr();
+    if (state.lastDate && state.lastDate !== today) {
+      // New day: check streak
+      if (state.goalMet) {
+        state.streak++;
+      } else {
+        state.streak = 0;
+      }
+      state.total = 0;
+      state.log = [];
+      state.goalMet = false;
+    }
+    state.lastDate = today;
+    save();
+  }
+
+  function save() {
+    localStorage.setItem('hydrate-state', JSON.stringify(state));
+  }
+
+  function addWater(ml) {
+    state.total += ml;
+    state.log.unshift({ ml, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+    if (state.total >= state.goal && !state.goalMet) {
+      state.goalMet = true;
+      celebrate();
+    }
+    save();
+    render();
+  }
+
+  function addCustom() {
+    const val = parseInt(document.getElementById('customMl').value);
+    if (val && val > 0) {
+      addWater(val);
+      document.getElementById('customMl').value = '';
+    }
+  }
+
+  document.getElementById('customMl').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addCustom();
+  });
+
+  function setGoal(g) {
+    state.goal = g;
+    document.querySelectorAll('.goal-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent === g + 'ml');
+    });
+    save();
+    render();
+  }
+
+  function deleteEntry(idx) {
+    const entry = state.log[idx];
+    state.total = Math.max(0, state.total - entry.ml);
+    state.log.splice(idx, 1);
+    save();
+    render();
+  }
+
+  function resetDay() {
+    if (!confirm('Reset today\'s water log?')) return;
+    state.total = 0;
+    state.log = [];
+    state.goalMet = false;
+    save();
+    render();
+  }
+
+  function celebrate() {
+    const el = document.getElementById('celebration');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  function render() {
+    const pct = Math.min(100, (state.total / state.goal) * 100);
+    document.getElementById('waterFill').style.height = pct + '%';
+    document.getElementById('pctLabel').textContent = Math.round(pct) + '%';
+    document.getElementById('currentVal').textContent = state.total;
+    document.getElementById('goalVal').textContent = state.goal;
+    document.getElementById('remainVal').textContent = Math.max(0, state.goal - state.total);
+    document.getElementById('streakText').textContent = state.streak + (state.streak === 1 ? ' day streak' : ' day streak');
+
+    // Goal buttons active state
+    document.querySelectorAll('.goal-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent === state.goal + 'ml');
+    });
+
+    // Log
+    const list = document.getElementById('logList');
+    if (state.log.length === 0) {
+      list.innerHTML = '<div class="empty-log">No water logged yet.<br>Start drinking! 💧</div>';
+    } else {
+      list.innerHTML = state.log.map((e, i) => `
+        <div class="log-item">
+          <span class="log-amount">+ ${e.ml}ml</span>
+          <span class="log-time">${e.time}</span>
+          <button class="log-delete" onclick="deleteEntry(${i})" title="Remove">✕</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Date display
+  const d = new Date();
+  document.getElementById('dateDisplay').textContent = d.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric'
+  });
+
+  // Bubbles
+  const bc = document.getElementById('bubbles');
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = Math.random() * 40 + 10;
+    b.style.cssText = `
+      width: ${size}px; height: ${size}px;
+      left: ${Math.random() * 100}%;
+      animation-duration: ${Math.random() * 15 + 10}s;
+      animation-delay: ${Math.random() * 10}s;
+    `;
+    bc.appendChild(b);
+  }
+
+  checkNewDay();
+  render();
+</script>
+</body>
+</html>
