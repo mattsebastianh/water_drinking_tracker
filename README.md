@@ -13,7 +13,7 @@ Hydrate is a minimalist single-page web app for tracking your daily water intake
 
 ### How to use
 1. **Open the app**
-   - Double‑click `water_tracker.html`, or open it from your browser via `File → Open` (works in Chrome, Firefox, Safari, Edge).
+   - Double‑click `index.html`, or open it from your browser via `File → Open` (works in Chrome, Firefox, Safari, Edge).
 2. **Set your daily goal**
    - Use the **Daily Goal** buttons (1500–3000ml) to choose your target. The current goal is shown under the glass.
 3. **Log your drinks**
@@ -26,9 +26,9 @@ Hydrate is a minimalist single-page web app for tracking your daily water intake
    - Click **Reset Day** to clear today’s log and totals. Your streak is only advanced when you reach your goal before the next day.
 
 ### Development Notes
-- **Tech stack**: Pure HTML, CSS, and vanilla JavaScript (`water_tracker.html` + `styles.css`).
+- **Tech stack**: Pure HTML, CSS, and vanilla JavaScript (`index.html` + `styles.css`).
 - **Persistence**: State is saved in `localStorage` under the key `hydrate-state`.
 - **Customization**:
   - Edit `styles.css` to change colors, fonts, and layout.
-  - Edit `water_tracker.html` to adjust default goal values, quick‑add amounts, or copy tweaks.
+  - Edit `index.html` to adjust default goal values, quick‑add amounts, or copy tweaks.
 
