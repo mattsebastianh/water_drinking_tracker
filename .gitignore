@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Common tooling outputs (if added later)
+node_modules/
+dist/
+build/
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# Node / tooling (if added later)
+node_modules/
+dist/
+build/
+*.log
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+
